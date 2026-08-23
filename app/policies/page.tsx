@@ -48,20 +48,17 @@ export default function PoliciesPage() {
             </h2>
             <div className="mt-4 space-y-4 text-sm leading-relaxed text-[var(--color-slate)]">
               <p>
-                We collect only the information needed to process your application — your
-                name, contact details, address, and the documents relevant to the service
-                you&apos;ve chosen.
-              </p>
-              <p>
-                Your information is used solely to complete your application and to
-                communicate with you about its status. We do not sell or share your personal
-                data with third parties, except where required to file your application with
-                the relevant government department.
-              </p>
-              <p>
-                Documents shared with us are stored securely and retained only for as long as
-                necessary to complete your service and meet any applicable legal requirements.
-              </p>
+  We charge for our consultancy and facilitation services only, and do not charge or
+  collect funds on behalf of the Government of India or any other government agency,
+  including Passport Seva and other departments. We apply and follow up on your behalf
+  and assist you through every stage of processing. The moment you click &quot;Submit&quot;
+  on our enquiry or application forms, you accept our Terms &amp; Conditions and Privacy
+  Policy, and authorise us to proceed with your application on your behalf.
+</p>
+<p>
+  Your relationship with {site.brandName} is governed by the Terms &amp; Conditions,
+  Privacy Policy, and Refund Policy set out on this page.
+</p>
               <p>
                 You may request details of the information we hold about you, or ask us to
                 delete it, by writing to us at{" "}

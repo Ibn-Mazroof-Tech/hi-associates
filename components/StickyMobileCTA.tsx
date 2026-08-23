@@ -21,7 +21,7 @@ export function StickyMobileCTA({ service }: { service: Service }) {
         href={`/apply-now?service=${service.slug}`}
         className="flex flex-1 items-center justify-center rounded-full bg-[var(--color-brand)] py-3 text-sm font-semibold text-white"
       >
-        Buy Now
+        Apply Now
       </Link>
     </div>
   );

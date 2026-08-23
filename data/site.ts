@@ -7,11 +7,11 @@
 
 export const site = {
   brandName: "HI Associates",
-  brandTagline: "Your Digital Seva Kendra",
-  legalLine: "Authorised CSC (Common Service Centre) Partner",
+  brandTagline: "Documentation & Compliance, Simplified",
+  legalLine: "Your Trusted Documentation & Compliance Partner",
 
-  email: "hamdaan@hiassociates.com",
-  landline: "011-40001234",
+  email: "info@hiassociates.com",
+  landline: "95400 05026",
   whatsappNumber: "919818123281", // country code + number, no + or spaces
   whatsappDisplay: "+91 98181 23281",
 

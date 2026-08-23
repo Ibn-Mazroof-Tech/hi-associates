@@ -1,7 +1,7 @@
 /**
  * SETUP:
  * 1. Create a new Google Sheet. Add this header row exactly:
- *    Timestamp | Service | Name | Mobile | Email | Address | Gazette Reason | Old Name | New Name
+ *    Timestamp | Ticket ID | Service | Name | Mobile | Email | Address | Gazette Reason | New Name
  * 2. In the Sheet, go to Extensions → Apps Script.
  * 3. Delete any existing code and paste this whole file in.
  * 4. Click Deploy → New deployment → select type "Web app".
@@ -10,6 +10,13 @@
  * 5. Click Deploy, authorize the permissions it asks for, then copy the
  *    Web App URL (ends in /exec).
  * 6. Paste that URL into `googleSheetWebhookUrl` in data/site.ts.
+ *
+ * NOTE ON "Name" vs Gazette applications: for every service the "Name"
+ * column holds the applicant's full name. For Gazette Notification
+ * specifically, the website collects "Old Name" and "New Name" from the
+ * applicant — the Old Name is what gets saved into this same "Name"
+ * column (so there's one consistent Name column for every row), and
+ * "New Name" is saved separately in its own column.
  *
  * IMPORTANT: If you edit this file after the first deploy, you must
  * redeploy for changes to take effect — Deploy → Manage deployments →
@@ -24,13 +31,13 @@ function doPost(e) {
 
     sheet.appendRow([
       new Date(),
+      data.ticketId || "",
       data.service || "",
       data.name || "",
       data.mobile || "",
       data.email || "",
       data.address || "",
       data.gazetteReason || "",
-      data.oldName || "",
       data.newName || "",
     ]);
 

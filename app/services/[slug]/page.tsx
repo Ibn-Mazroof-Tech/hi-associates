@@ -92,7 +92,7 @@ export default async function ServiceDetailPage({
       {service.isGazette && (
         <section className="container-page pb-4">
           <div className="rounded-2xl border border-[var(--color-seal)]/30 bg-[var(--color-seal-light)] p-5 text-sm leading-relaxed text-[var(--color-ink)]">
-            <strong className="font-semibold">Note:</strong> When you click Buy Now for this
+            <strong className="font-semibold">Note:</strong> When you click Apply Now for this
             service, the application form will ask for your old name, new name, and the reason
             for the change, instead of the usual first/last name fields.
           </div>

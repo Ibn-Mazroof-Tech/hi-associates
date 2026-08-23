@@ -1,10 +1,10 @@
 export type GazetteReason =
-  | "Marriage"
-  | "Divorce"
-  | "Religion Conversion"
-  | "Spelling Correction"
   | "Personal Preference"
-  | "Other";
+  | "Marriage / Divorce"
+  | "Religion"
+  | "Gender Change"
+  | "Surname Change"
+  | "Name Change for Minor";
 
 export type Service = {
   slug: string;
@@ -61,12 +61,12 @@ export const services: Service[] = [
     processingTime: "4–8 weeks (State Gazette: 3–5 weeks · Central Gazette: 6–8 weeks)",
     isGazette: true,
     gazetteReasons: [
-      "Marriage",
-      "Divorce",
-      "Religion Conversion",
-      "Spelling Correction",
       "Personal Preference",
-      "Other",
+      "Marriage / Divorce",
+      "Religion",
+      "Gender Change",
+      "Surname Change",
+      "Name Change for Minor",
     ],
   },
   {
@@ -286,3 +286,65 @@ export const services: Service[] = [
 export function getServiceBySlug(slug: string) {
   return services.find((s) => s.slug === slug);
 }
+
+// ─────────────────────────────────────────────────────────────
+// Apply Now FORM categories only. Services listing / homepage
+// grid stay flat — this grouping exists purely to make the
+// dropdown on the form easier to scan (pick a category first,
+// then the exact service within it).
+// ─────────────────────────────────────────────────────────────
+export type ServiceCategory = {
+  id: string;
+  label: string;
+  slugs: string[];
+};
+
+export const serviceCategories: ServiceCategory[] = [
+  {
+    id: "gazette",
+    label: "Gazette Notification",
+    slugs: ["gazette-notification"],
+  },
+  {
+    id: "gst",
+    label: "GST",
+    slugs: [
+      "gst-registration",
+      "gst-return-filing",
+      "udyam-msme-registration",
+      "company-llp-registration",
+      "digital-signature-certificate",
+      "accounting-bookkeeping",
+    ],
+  },
+  {
+    id: "itr",
+    label: "ITR",
+    slugs: ["income-tax-return-filing"],
+  },
+  {
+    id: "pan",
+    label: "PAN Card",
+    slugs: ["pan-card"],
+  },
+  {
+    id: "passport",
+    label: "Passport",
+    slugs: ["passport-assistance"],
+  },
+  {
+    id: "other",
+    label: "Other Services",
+    slugs: [
+      "trademark-registration",
+      "fssai-food-license",
+      "iso-certification",
+      "import-export-code",
+    ],
+  },
+];
+
+export function getCategoryForSlug(slug: string) {
+  return serviceCategories.find((c) => c.slugs.includes(slug));
+}
+

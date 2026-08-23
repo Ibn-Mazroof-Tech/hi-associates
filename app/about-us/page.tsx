@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, Users, Clock3, MapPinned, ArrowRight } from "lucide-react";
 import { site } from "@/data/site";
+import { TeamSection } from "@/components/TeamSection";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -43,7 +44,7 @@ export default function AboutUsPage() {
             Your paperwork, our responsibility
           </h1>
           <p className="mt-5 text-[15px] leading-relaxed text-[var(--color-slate)]">
-            {site.brandName} is an online Common Service Centre (CSC) helping individuals and
+            {site.brandName} is an online documentation and compliance service, helping individuals and
             small businesses complete government registrations, certificates, and filings —
             without the queues, the confusion, or the back-and-forth office visits. What used
             to take weeks of running between departments now happens from your phone.
@@ -65,6 +66,27 @@ export default function AboutUsPage() {
               <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-slate)]">{v.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-[var(--color-sky)] py-16 sm:py-20">
+        <div className="container-page">
+          <div className="max-w-2xl">
+            <p className="font-[family-name:var(--font-mono)] text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-brand)]">
+              Our Team
+            </p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--color-ink)] sm:text-3xl">
+              The people behind your paperwork
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-slate)]">
+              A small, dedicated team that reviews every application personally — from the
+              first document you share to the final certificate in your hands. No call
+              centres, no case numbers, just people who know your file.
+            </p>
+          </div>
+          <div className="mt-10">
+            <TeamSection />
+          </div>
         </div>
       </section>
 

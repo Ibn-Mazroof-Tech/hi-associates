@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Mail, Phone, MapPin, ScrollText } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { FacebookIcon, InstagramIcon, LinkedinIcon } from "./social-icons";
 import { site } from "@/data/site";
 import { services } from "@/data/services";
+import { Logo } from "./Logo";
 
 const policyLinks = [
   { href: "/policies#privacy-policy", label: "Privacy Policy" },
@@ -17,9 +18,7 @@ export function Footer() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-full bg-white/10">
-              <ScrollText className="size-4.5 text-[var(--color-seal)]" strokeWidth={2} />
-            </span>
+            <img src="/logo.png" className="size-9" alt="HI Associates" />
             <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-white">
               {site.brandName}
             </span>

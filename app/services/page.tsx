@@ -7,7 +7,7 @@ import { MessageCircle } from "lucide-react";
 export const metadata: Metadata = {
   title: "Our Services",
   description:
-    "Browse all CSC services we handle — Gazette Notification, GST, Income Tax, MSME, Trademark, FSSAI, and more.",
+    "Browse all services we handle — Gazette Notification, GST, Income Tax, MSME, Trademark, FSSAI, and more.",
 };
 
 export default function ServicesPage() {

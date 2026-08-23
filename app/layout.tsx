@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: `%s | ${site.brandName}`,
   },
   description:
-    "Online CSC services — Gazette Notification, GST Registration, Income Tax Filing, MSME, Trademark, and more. 100% online, transparent, and on time.",
+    "Online paperwork and compliance services — Gazette Notification, GST Registration, Income Tax Filing, MSME, Trademark, and more. 100% online, transparent, and on time.",
 };
 
 export default function RootLayout({

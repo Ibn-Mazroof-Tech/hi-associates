@@ -28,7 +28,7 @@ export function ServiceCTA({
         href={`/apply-now?service=${service.slug}`}
         className="flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-brand)]/20 hover:bg-[var(--color-brand-dark)] transition-colors"
       >
-        Buy Now
+        Apply Now
         <ArrowRight className="size-4" strokeWidth={2} />
       </Link>
     </div>

@@ -1,22 +1,28 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import { CheckCircle2, Send, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
-import { services, type GazetteReason } from "@/data/services";
+import { useRouter } from "next/navigation";
+import { Send, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
+import {
+  serviceCategories,
+  getServiceBySlug,
+  getCategoryForSlug,
+  type GazetteReason,
+} from "@/data/services";
 import { site, whatsappLink } from "@/data/site";
+import { generateTicketId } from "@/lib/ticket";
 import { cn } from "@/lib/utils";
 
 const gazetteReasons: GazetteReason[] = [
-  "Marriage",
-  "Divorce",
-  "Religion Conversion",
-  "Spelling Correction",
   "Personal Preference",
-  "Other",
+  "Marriage / Divorce",
+  "Religion",
+  "Gender Change",
+  "Surname Change",
+  "Name Change for Minor",
 ];
 
 type FormState = {
-  serviceSlug: string;
   firstName: string;
   lastName: string;
   oldName: string;
@@ -28,7 +34,6 @@ type FormState = {
 };
 
 const emptyForm: FormState = {
-  serviceSlug: "",
   firstName: "",
   lastName: "",
   oldName: "",
@@ -39,7 +44,7 @@ const emptyForm: FormState = {
   address: "",
 };
 
-type Status = "idle" | "submitting" | "success" | "error";
+type Status = "idle" | "submitting" | "error";
 
 const inputClasses =
   "w-full rounded-xl border border-[var(--color-line)] bg-white px-4 py-3 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-slate)]/50 focus:border-[var(--color-brand)] outline-none transition-colors";
@@ -48,18 +53,30 @@ const labelClasses = "mb-1.5 block text-sm font-medium text-[var(--color-ink)]";
 const errorClasses = "mt-1.5 text-xs font-medium text-red-600";
 
 export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string }) {
-  const [form, setForm] = useState<FormState>({
-    ...emptyForm,
-    serviceSlug: initialServiceSlug ?? "",
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
-  const [status, setStatus] = useState<Status>("idle");
+  const router = useRouter();
+  const initialCategory = initialServiceSlug ? getCategoryForSlug(initialServiceSlug) : undefined;
 
-  const selectedService = useMemo(
-    () => services.find((s) => s.slug === form.serviceSlug),
-    [form.serviceSlug]
+  const [categoryId, setCategoryId] = useState(initialCategory?.id ?? "");
+  const [serviceSlug, setServiceSlug] = useState(initialServiceSlug ?? "");
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState | "category" | "service", string>>>({});
+  const [status, setStatus] = useState<Status>("idle");
+  const [lastTicketId, setLastTicketId] = useState("");
+
+  const selectedCategory = useMemo(
+    () => serviceCategories.find((c) => c.id === categoryId),
+    [categoryId]
   );
+  const selectedService = useMemo(() => getServiceBySlug(serviceSlug), [serviceSlug]);
   const isGazette = Boolean(selectedService?.isGazette);
+  const needsServicePicker = Boolean(selectedCategory && selectedCategory.slugs.length > 1);
+
+  function handleCategoryChange(newCategoryId: string) {
+    setCategoryId(newCategoryId);
+    const cat = serviceCategories.find((c) => c.id === newCategoryId);
+    setServiceSlug(cat && cat.slugs.length === 1 ? cat.slugs[0] : "");
+    setErrors((prev) => ({ ...prev, category: undefined, service: undefined }));
+  }
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -67,9 +84,10 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
   }
 
   function validate(): boolean {
-    const next: Partial<Record<keyof FormState, string>> = {};
+    const next: Partial<Record<keyof FormState | "category" | "service", string>> = {};
 
-    if (!form.serviceSlug) next.serviceSlug = "Please choose a service.";
+    if (!categoryId) next.category = "Please choose a category.";
+    if (!serviceSlug) next.service = "Please choose a service.";
 
     if (isGazette) {
       if (!form.oldName.trim()) next.oldName = "Please enter your current (old) name.";
@@ -83,24 +101,30 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
     if (!/^\d{10}$/.test(form.mobile.trim())) {
       next.mobile = "Please enter a valid 10-digit mobile number.";
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      next.email = "Please enter a valid email address.";
-    }
+
+    // Email is required for every service except Gazette, where it's optional
+    // (but must still be a valid address if the person chooses to fill it in).
+    const emailTrimmed = form.email.trim();
+if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+  next.email = "Please enter a valid email address.";
+}
+
     if (!form.address.trim()) next.address = "Please enter your address.";
 
     setErrors(next);
     return Object.keys(next).length === 0;
   }
 
-  function buildWhatsAppMessage(name: string) {
+  function buildWhatsAppMessage(ticketId: string, name: string) {
     const lines = [
       `New enquiry from ${site.brandName} website`,
+      `Ticket ID: ${ticketId}`,
       `Service: ${selectedService?.title}`,
       isGazette
         ? `Old Name: ${form.oldName}\nNew Name: ${form.newName}\nReason: ${form.gazetteReason}`
         : `Name: ${name}`,
       `Mobile: ${form.mobile}`,
-      `Email: ${form.email}`,
+      `Email: ${form.email || "—"}`,
       `Address: ${form.address}`,
     ];
     return lines.join("\n");
@@ -110,12 +134,12 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
     e.preventDefault();
     if (!validate() || !selectedService) return;
 
-    const name = isGazette ? "" : `${form.firstName} ${form.lastName}`;
+    const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
+    const ticketId = generateTicketId();
+    setLastTicketId(ticketId);
 
     if (!site.googleSheetWebhookUrl) {
-      console.warn(
-        "googleSheetWebhookUrl is not set in data/site.ts — form cannot be saved."
-      );
+      console.warn("googleSheetWebhookUrl is not set in data/site.ts — form cannot be saved.");
       setStatus("error");
       return;
     }
@@ -123,28 +147,31 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
     setStatus("submitting");
 
     try {
-      // NOTE: no "mode: no-cors" here on purpose — we need to actually
-      // read the response to know whether the row was saved. Sending
-      // Content-Type: text/plain avoids a CORS preflight (which Apps
-      // Script Web Apps don't handle), so this stays a "simple request".
+      // No "mode: no-cors" here on purpose — we need to read the response
+      // to know whether the row was saved. Content-Type: text/plain avoids
+      // a CORS preflight (which Apps Script Web Apps don't handle).
       const res = await fetch(site.googleSheetWebhookUrl, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
+          ticketId,
           service: selectedService.title,
           name,
           mobile: form.mobile,
           email: form.email,
           address: form.address,
           gazetteReason: form.gazetteReason,
-          oldName: form.oldName,
           newName: form.newName,
         }),
       });
 
       const data = await res.json();
       if (data.result === "success") {
-        setStatus("success");
+        router.push(
+          `/application-submitted?ticket=${encodeURIComponent(ticketId)}&service=${encodeURIComponent(
+            selectedService.slug
+          )}`
+        );
       } else {
         setStatus("error");
       }
@@ -153,34 +180,8 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
     }
   }
 
-  if (status === "success") {
-    return (
-      <div className="rounded-2xl border border-[var(--color-line)] bg-white p-8 text-center sm:p-10">
-        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#1F9E4E]/10 text-[#1F9E4E]">
-          <CheckCircle2 className="size-7" strokeWidth={1.75} />
-        </span>
-        <h2 className="mt-5 font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-ink)]">
-          Application submitted successfully.
-        </h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--color-slate)]">
-          We&apos;ve received your details. Our team will review your application and
-          reach out to you on your mobile number shortly.
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setForm({ ...emptyForm, serviceSlug: form.serviceSlug });
-            setStatus("idle");
-          }}
-          className="mt-6 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] transition-colors"
-        >
-          Submit another request
-        </button>
-      </div>
-    );
-  }
-
   if (status === "error") {
+    const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
     return (
       <div className="rounded-2xl border border-[var(--color-line)] bg-white p-8 text-center sm:p-10">
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">
@@ -203,7 +204,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
           </button>
           {selectedService && (
             <a
-              href={whatsappLink(buildWhatsAppMessage(`${form.firstName} ${form.lastName}`))}
+              href={whatsappLink(buildWhatsAppMessage(lastTicketId, name))}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-ink)] hover:border-[#1F9E4E]/40 hover:text-[#1F9E4E] transition-colors"
@@ -219,26 +220,55 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
 
   return (
     <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-[var(--color-line)] bg-white p-6 sm:p-8">
-      <div>
-        <label htmlFor="service" className={labelClasses}>
-          Choose your service
-        </label>
-        <select
-          id="service"
-          value={form.serviceSlug}
-          onChange={(e) => update("serviceSlug", e.target.value)}
-          className={cn(inputClasses, "appearance-none")}
-        >
-          <option value="" disabled>
-            Select a service
-          </option>
-          {services.map((s) => (
-            <option key={s.slug} value={s.slug}>
-              {s.title}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="category" className={labelClasses}>
+            Choose a category
+          </label>
+          <select
+            id="category"
+            value={categoryId}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className={cn(inputClasses, "appearance-none")}
+          >
+            <option value="" disabled>
+              Select a category
             </option>
-          ))}
-        </select>
-        {errors.serviceSlug && <p className={errorClasses}>{errors.serviceSlug}</p>}
+            {serviceCategories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+          {errors.category && <p className={errorClasses}>{errors.category}</p>}
+        </div>
+
+        {needsServicePicker && (
+          <div>
+            <label htmlFor="service" className={labelClasses}>
+              Choose a service
+            </label>
+            <select
+              id="service"
+              value={serviceSlug}
+              onChange={(e) => {
+                setServiceSlug(e.target.value);
+                setErrors((prev) => ({ ...prev, service: undefined }));
+              }}
+              className={cn(inputClasses, "appearance-none")}
+            >
+              <option value="" disabled>
+                Select a service
+              </option>
+              {selectedCategory?.slugs.map((slug) => (
+                <option key={slug} value={slug}>
+                  {getServiceBySlug(slug)?.title}
+                </option>
+              ))}
+            </select>
+            {errors.service && <p className={errorClasses}>{errors.service}</p>}
+          </div>
+        )}
       </div>
 
       {isGazette ? (
@@ -309,6 +339,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
             <input
               id="firstName"
               type="text"
+              autoComplete="given-name"
               value={form.firstName}
               onChange={(e) => update("firstName", e.target.value)}
               placeholder="Ravi"
@@ -323,6 +354,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
             <input
               id="lastName"
               type="text"
+              autoComplete="given-name"
               value={form.lastName}
               onChange={(e) => update("lastName", e.target.value)}
               placeholder="Kumar"
@@ -341,6 +373,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
           <input
             id="mobile"
             type="tel"
+            autoComplete="given-name"
             inputMode="numeric"
             value={form.mobile}
             onChange={(e) => update("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -351,11 +384,12 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
         </div>
         <div>
           <label htmlFor="email" className={labelClasses}>
-            Email Address
-          </label>
+  Email Address <span className="font-normal text-[var(--color-slate)]">(optional)</span>
+</label>
           <input
             id="email"
             type="email"
+            autoComplete="given-name"
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
             placeholder="you@example.com"
@@ -373,6 +407,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
           id="address"
           rows={3}
           value={form.address}
+          autoComplete="given-name"
           onChange={(e) => update("address", e.target.value)}
           placeholder="House no., street, city, state, PIN code"
           className={cn(inputClasses, "resize-none")}
@@ -398,7 +433,8 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
         )}
       </button>
       <p className="mt-3 text-xs text-[var(--color-slate)]">
-        Your details go straight to our team — no need to send anything on WhatsApp yourself.
+        You&apos;ll get a Ticket ID after submitting — save it to check your application status
+        with us later.
       </p>
     </form>
   );

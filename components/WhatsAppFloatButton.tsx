@@ -1,4 +1,4 @@
-import { MessageCircle } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa6";
 import { site, whatsappLink } from "@/data/site";
 
 export function WhatsAppFloatButton() {
@@ -8,9 +8,9 @@ export function WhatsAppFloatButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-5 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#1F9E4E] text-white shadow-lg shadow-[#1F9E4E]/30 hover:scale-105 transition-transform motion-reduce:hover:scale-100"
+      className="fixed bottom-5 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/30 hover:scale-105 transition-transform motion-reduce:hover:scale-100"
     >
-      <MessageCircle className="size-6.5" strokeWidth={1.75} />
+      <FaWhatsapp className="size-7" />
     </a>
   );
 }

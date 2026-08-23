@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, MessageCircle, ScrollText } from "lucide-react";
-import { site, whatsappLink } from "@/data/site";
+import { Menu, X } from "lucide-react";
+import { site } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { Logo } from "./Logo";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -21,9 +22,7 @@ export function Navbar() {
     <div className="bg-white/95 backdrop-blur border-b border-[var(--color-line)]">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="flex size-9 items-center justify-center rounded-full bg-[var(--color-brand)] text-white">
-            <ScrollText className="size-4.5" strokeWidth={2} />
-          </span>
+          <img src="/logo.png" className="size-9" alt="HI Associates" />
           <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)] leading-tight">
             {site.brandName}
           </span>
@@ -42,15 +41,6 @@ export function Navbar() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <a
-            href={whatsappLink(`Hi ${site.brandName}, I'd like to know more about your services.`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Chat on WhatsApp"
-            className="flex size-10 items-center justify-center rounded-full border border-[var(--color-line)] text-[#1F9E4E] hover:bg-[#1F9E4E]/10 transition-colors"
-          >
-            <MessageCircle className="size-5" strokeWidth={1.75} />
-          </a>
           <Link
             href="/apply-now"
             className="rounded-full bg-[var(--color-brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-brand-dark)] transition-colors"
@@ -88,15 +78,6 @@ export function Navbar() {
             </Link>
           ))}
           <div className="flex items-center gap-3 pt-2">
-            <a
-              href={whatsappLink(`Hi ${site.brandName}, I'd like to know more about your services.`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--color-line)] py-2.5 text-sm font-medium text-[#1F9E4E]"
-            >
-              <MessageCircle className="size-4.5" strokeWidth={1.75} />
-              WhatsApp
-            </a>
             <Link
               href="/apply-now"
               onClick={() => setOpen(false)}
