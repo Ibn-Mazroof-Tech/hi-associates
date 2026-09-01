@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@import "@fontsource/ibm-plex-serif/400.css";
+@import "@fontsource/ibm-plex-serif/500.css";
+@import "@fontsource/ibm-plex-serif/600.css";
+@import "@fontsource/ibm-plex-serif/700.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  /* Core palette — white + blue, with a small gold "seal" accent for
+     the certificate / official-document feel of the subject matter. */
+  --color-white: #ffffff;
+  --color-ink: #0b2545;      /* headings, high-contrast text */
+  --color-brand: #1657b0;    /* primary blue — buttons, links */
+  --color-brand-dark: #0e3f85;
+  --color-brand-light: #2f79d8;
+  --color-sky: #eaf2fc;      /* tinted section backgrounds */
+  --color-sky-deep: #dbe9fb;
+  --color-slate: #55647a;    /* secondary / body text on white */
+  --color-seal: #c89b3c;     /* gold accent — used sparingly */
+  --color-seal-light: #f4e9d2;
+  --color-line: #dde6f2;     /* hairline borders */
+
+  --font-display: "IBM Plex Serif", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-white: var(--color-white);
+  --color-ink: var(--color-ink);
+  --color-brand: var(--color-brand);
+  --color-brand-dark: var(--color-brand-dark);
+  --color-brand-light: var(--color-brand-light);
+  --color-sky: var(--color-sky);
+  --color-sky-deep: var(--color-sky-deep);
+  --color-slate: var(--color-slate);
+  --color-seal: var(--color-seal);
+  --color-seal-light: var(--color-seal-light);
+  --color-line: var(--color-line);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible keyboard focus everywhere */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.container-page {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
+
+/* Seal / stamp motif — used on the hero card, service badges, and
+   trust markers to tie back to the "official document" subject. */
+.seal-ring {
+  border: 1.5px dashed var(--color-seal);
+  border-radius: 999px;
+}
+
+/* Infinite right-to-left marquee for the announcement bar. Content is
+   rendered twice back-to-back and we scroll exactly half the track
+   width, so the loop is seamless. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 70s linear infinite;
+}
