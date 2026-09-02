@@ -15,7 +15,7 @@ export const site = {
   whatsappNumber: "919910247897", // country code + number, no + or spaces
   whatsappDisplay: "+91 99102 47897",
 
-  address: "Jafrabad, Seelampur, Delhi-110053",
+  address: "570, street no.25, Jafrabad, Seelampur, Delhi-110053",
 
   // Image paths — all files live in /public, but you only ever need to
   // edit the path here. To swap an image: drop the new file into
