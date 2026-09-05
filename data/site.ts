@@ -8,8 +8,9 @@
 export const site = {
   brandName: "Hamdan Associates",
   brandTagline: "Documentation & Compliance, Simplified",
-  legalLine: "Your Trusted Documentation & Compliance Partner",
+  legalLine: "Expert Assistance for All Your Professional Document Needs.",
 
+  website: "https://hiassociates.com",
   email: "hamdan@hiassociates.com",
   landline: "+91 11 4907 2356",
   whatsappNumber: "919910247897", // country code + number, no + or spaces
@@ -17,13 +18,24 @@ export const site = {
 
   address: "570, street no.25, Jafrabad, Seelampur, Delhi-110053",
 
+  // Fixed registration fee charged via Razorpay when someone submits the
+  // Apply Now form — same amount for every service. Change this single
+  // number to update the fee everywhere.
+  applyNowRegistrationFee: 100,
+
+  // "Get Quote" button (homepage hero + bottom CTA) opens this Google
+  // Form in a new tab instead of the Apply Now page — see README for
+  // how to create the form (Service, Full Name, Last Name, Contact,
+  // City, Address, Remark) and link its responses to a Sheet.
+  getQuoteFormUrl: "https://forms.gle/8JM3iSwAYUUK7UMC9",
+
   // Image paths — all files live in /public, but you only ever need to
   // edit the path here. To swap an image: drop the new file into
   // /public (any filename) and update the matching line below —
   // nothing in components/ or app/ needs to change.
   images: {
     logo: "/logo.png",
-    homeHero: "/hero-office-desk.jpg", // homepage hero background
+    homeHero: "/hero-office.jpg", // homepage hero background
     aboutHero: "/about-hero.jpg", // About Us page intro background
     contactHero: "/contact-hero.jpg", // Contact Us page intro background
   },

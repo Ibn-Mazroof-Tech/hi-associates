@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
 import { site, whatsappLink } from "@/data/site";
@@ -20,10 +19,10 @@ export function Hero() {
       <div className="absolute inset-0 -z-10 bg-[var(--color-ink)]/55" aria-hidden />
       {/* Extra left-side gradient — stronger contrast behind the text on
           wide screens, while keeping the documents visible on the right */}
-      <div
+      {/* <div
         className="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-ink)]/75 to-transparent sm:via-[var(--color-ink)]/55"
         aria-hidden
-      />
+      /> */}
 
       <div className="container-page relative py-20 sm:py-28 lg:py-32">
         <div className="max-w-xl">
@@ -33,9 +32,9 @@ export function Hero() {
           </span>
 
           <h1 className="mt-6 font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
-            Government paperwork,
+            Simplifying Documentation.
             <br />
-            handled for you —
+            Empowering Your Business —
             <span className="text-[var(--color-seal)]"> start to finish.</span>
           </h1>
 
@@ -45,13 +44,15 @@ export function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link
-              href="/apply-now"
+            <a
+              href={site.getQuoteFormUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-black/20 hover:bg-[var(--color-brand-dark)] transition-colors"
             >
               Get Quote
               <ArrowRight className="size-4" strokeWidth={2} />
-            </Link>
+            </a>
             <a
               href={whatsappLink(`Hi ${site.brandName}, I'd like to know more about your services.`)}
               target="_blank"

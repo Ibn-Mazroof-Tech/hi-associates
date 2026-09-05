@@ -324,6 +324,30 @@ export function getServiceBySlug(slug: string) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Homepage services grid — a specific pinned order for the first few
+// cards, one service (GST Return Filing) excluded so the grid divides
+// evenly. The Services listing page, Apply Now dropdown, and each
+// service's own page are unaffected — they keep using `services` above.
+// ─────────────────────────────────────────────────────────────
+const homepagePinnedOrder = [
+  "passport-assistance",
+  "pan-card",
+  "gazette-notification",
+  "birth-certificate",
+  "newspaper-advertising",
+  "gst-registration",
+];
+
+const homepageExcluded = ["gst-return-filing"];
+
+export const homepageServices: Service[] = [
+  ...homepagePinnedOrder.map((slug) => getServiceBySlug(slug)!),
+  ...services.filter(
+    (s) => !homepagePinnedOrder.includes(s.slug) && !homepageExcluded.includes(s.slug)
+  ),
+];
+
+// ─────────────────────────────────────────────────────────────
 // Apply Now FORM categories only. Services listing / homepage
 // grid stay flat — this grouping exists purely to make the
 // dropdown on the form easier to scan (pick a category first,

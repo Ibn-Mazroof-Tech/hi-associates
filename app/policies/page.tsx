@@ -47,26 +47,98 @@ export default function PoliciesPage() {
               Privacy Policy
             </h2>
             <div className="mt-4 space-y-4 text-sm leading-relaxed text-[var(--color-slate)]">
+              <p className="font-medium text-[var(--color-ink)]">
+                Effective Date: 1st January, 2025
+              </p>
               <p>
-  We charge for our consultancy and facilitation services only, and do not charge or
-  collect funds on behalf of the Government of India or any other government agency,
-  including Passport Seva and other departments. We apply and follow up on your behalf
-  and assist you through every stage of processing. The moment you click &quot;Submit&quot;
-  on our enquiry or application forms, you accept our Terms &amp; Conditions and Privacy
-  Policy, and authorise us to proceed with your application on your behalf.
-</p>
-<p>
-  Your relationship with {site.brandName} is governed by the Terms &amp; Conditions,
-  Privacy Policy, and Refund Policy set out on this page.
-</p>
-              <p>
-                You may request details of the information we hold about you, or ask us to
-                delete it, by writing to us at{" "}
-                <a href={`mailto:${site.email}`} className="font-medium text-[var(--color-brand)]">
-                  {site.email}
+                {site.brandName} (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) values your
+                privacy. This Privacy Policy explains how we collect, use, and protect your
+                information when you visit our website{" "}
+                <a href={site.website} className="font-medium text-[var(--color-brand)]">
+                  {site.website}
                 </a>
                 .
               </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Information We Collect
+              </h3>
+              <ul className="list-disc space-y-1.5 pl-5">
+                <li>
+                  Personal information you provide (such as name, email, phone number) when
+                  you contact us or sign up for services.
+                </li>
+                <li>
+                  Non-personal information (such as browser type, IP address, pages visited)
+                  collected automatically through cookies or analytics tools.
+                </li>
+              </ul>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                How We Use Information
+              </h3>
+              <p>We may use the information we collect to:</p>
+              <ul className="list-disc space-y-1.5 pl-5">
+                <li>Provide, operate, and improve our website and services.</li>
+                <li>Respond to inquiries or customer support requests.</li>
+                <li>Send updates, offers, or marketing communications (you can opt out anytime).</li>
+                <li>Analyze website traffic and usage patterns.</li>
+              </ul>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Sharing of Information
+              </h3>
+              <p>
+                We do not sell, rent, or trade your personal information. We may share data
+                only with trusted third parties who help us operate our website, comply with
+                legal requirements, or protect our rights.
+              </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Cookies
+              </h3>
+              <p>
+                Our website may use cookies to enhance your browsing experience. You can
+                adjust your browser settings to refuse cookies, but some features may not
+                function properly.
+              </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Data Security
+              </h3>
+              <p>
+                We implement reasonable measures to protect your personal information.
+                However, no method of transmission over the Internet is completely secure.
+              </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Your Rights
+              </h3>
+              <p>
+                You may request access, correction, or deletion of your personal data by
+                contacting us at{" "}
+                <a href={`${site.website}/contact-us`} className="font-medium text-[var(--color-brand)]">
+                  {site.website}/contact-us
+                </a>
+                .
+              </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Updates to This Policy
+              </h3>
+              <p>
+                We may update this Privacy Policy from time to time. Changes will be posted
+                on this page with the updated effective date.
+              </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Contact Us
+              </h3>
+              <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+              <ul className="list-none space-y-1.5">
+                <li>📞 {site.landline}</li>
+                <li>📍 {site.address}</li>
+              </ul>
             </div>
           </section>
 

@@ -87,7 +87,7 @@ rehte hain.
 ### Setup (ek baar karna hai)
 
 1. Naya Google Sheet banao, pehli row mein header daalo:
-   `Date | Ticket ID | Service | Name | Mobile | Email | Address | Gazette Reason | New Name`
+   `Date | Ticket ID | Service | Name | Mobile | Email | State | Address | Gazette Reason | New Name | Razorpay Payment ID`
 2. Sheet mein **Extensions → Apps Script** kholo, `google-apps-script/Code.gs` ka poora code
    paste kar do.
 3. **Deploy → New deployment → Web app** — "Execute as: Me", "Who has access: Anyone" →
@@ -120,6 +120,47 @@ milega jo kabhi kisi commit mein nahi tha, aur usi naye URL ko `.env.local` / Ve
 - **`.env.local` mein sahi variable name hai ya nahi** — `GOOGLE_SHEET_WEBHOOK_URL` hi hona
   chahiye, spelling match karna zaroori hai.
 
+## Apply Now ka registration fee (Razorpay)
+
+Apply Now form submit karne pe ab pehle ek **fixed registration fee** (`data/site.ts` ke
+`applyNowRegistrationFee` field se, sab services ke liye same amount) Razorpay ke through pay
+karni padti hai. Flow yeh hai:
+
+1. Form validate hota hai
+2. Razorpay checkout khulta hai fixed fee ke liye
+3. **Payment successful hone ke baad hi** application data Google Sheet mein save hota hai
+   (Ticket ID generate hoke), Razorpay Payment ID bhi usi row mein save hota hai
+4. Agar user checkout cancel/close kar de bina pay kiye, **kuch bhi save nahi hota** — form
+   wapas khaali state pe aa jata hai, dobara try kar sakte hain
+5. Agar payment successful ho jaye lekin Sheet mein save karte waqt koi error aa jaye (rare),
+   user ko ek alag screen dikhta hai jisme Payment ID clearly mention hota hai — taaki client
+   samajh sake ki paisa aa chuka hai, dobara charge nahi karna, bas manually Sheet mein add
+   karna hai us Payment ID ke through
+
+Fee amount change karna ho, bas `data/site.ts` mein `applyNowRegistrationFee: 100` wali line
+edit kar dena — poori site automatically update ho jayegi.
+
+Yeh **standalone "Make a Payment" page (`/payment`) se bilkul alag** hai — woh apni jagah waisa
+hi rahega, alag Sheet ke saath, is fee se koi connection nahi.
+
+## "Get Quote" button → Google Form
+
+Homepage ke 2 "Get Quote" buttons (Hero + neeche wala CTA banner) ab `/apply-now` pe nahi,
+balki ek **Google Form** pe le jaate hain (naya tab mein khulta hai) — yeh free/no-payment lead
+capture ke liye hai, "Apply Now" (jisme ab fee lagti hai) se alag.
+
+### Setup (ek baar karna hai)
+
+1. [forms.google.com](https://forms.google.com) pe jaake naya form banao, exactly yeh 7
+   fields daalo (order matter nahi karta, naam thoda different bhi chalega):
+   Service, Full Name, Last Name, Contact, City, Address, Remark.
+2. Form ke **Responses** tab mein jaake green Sheets icon pe click karo — "Select response
+   destination" → "Create a new spreadsheet". Bas itna hi, Google khud ek naya Sheet bana
+   dega jisme har submission automatically ek row ban jayegi — koi code/webhook nahi chahiye
+   is baar, yeh Google Forms ka built-in feature hai.
+3. Form ke top-right **Send** button pe click karo → link (🔗) icon → URL copy karo.
+4. `data/site.ts` mein `getQuoteFormUrl` field mein woh URL paste kar do.
+
 ## Payment page (Razorpay)
 
 Header ke right side mein "Make Payment" link hai (`/payment`) — koi bhi amount enter karke
@@ -149,6 +190,25 @@ Jab tak yeh keys nahi daali jaatin, Payment page pe "Payment is not configured y
 aayega — yeh expected hai, bas keys daalte hi kaam karne lagega. Test Key se pehle test kar
 lena (Razorpay test cards docs pe available hain), phir Live Key pe switch karna.
 
+### Payment records — separate Google Sheet
+
+Har successful payment ke baad (Razorpay se confirm hone ke turant baad) ek row **ek alag,
+dedicated Google Sheet** mein save hoti hai — Apply Now wali Sheet se bilkul separate. Columns:
+`Date | Ticket ID | Name | Mobile | Remark | Amount | Razorpay Payment ID`.
+
+1. Naya Google Sheet banao (Apply Now wali se **alag**), header row daalo upar wale order mein.
+2. Extensions → Apps Script kholo, `google-apps-script/PaymentsCode.gs` ka poora code paste
+   karo.
+3. Deploy → New deployment → Web app — "Execute as: Me", "Who has access: Anyone" → Deploy →
+   `/exec` URL copy karo.
+4. `.env.local` mein `GOOGLE_PAYMENTS_SHEET_WEBHOOK_URL=` ke aage woh URL paste karo, Vercel
+   Environment Variables mein bhi wahi naam se add karo.
+
+**Important:** yeh sirf record-keeping hai — agar kisi wajah se yeh logging fail ho jaye (jaise
+URL galat daal diya), **payment khud fail nahi hoti**, kyunki yeh call payment successful hone
+ke *baad* hoti hai. Agar kabhi Sheet ka data Razorpay Dashboard ke actual payments se match na
+kare, Razorpay Dashboard ko hi source of truth maanna — woh kabhi galat nahi hoga.
+
 ## Structure
 
 ```
@@ -160,6 +220,8 @@ app/                        → pages (App Router)
   application-submitted/     → Form submit hone ke baad Ticket ID page
   payment/                   → Razorpay payment page
   api/razorpay/order/        → Server-side order creation (key_secret yahin use hoti hai)
+  api/log-payment/           → Payment ko separate Sheet mein log karta hai
+  api/apply/                 → Apply Now form ko Sheet webhook tak forward karta hai (secret hide)
   about-us/ contact-us/ policies/
 components/                 → UI components
 data/                       → site.ts, services.ts, team.ts

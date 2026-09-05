@@ -13,14 +13,14 @@ declare global {
 }
 
 type FormState = {
+  ticketId: string;
   name: string;
   mobile: string;
-  email: string;
-  reference: string;
+  remark: string;
   amount: string;
 };
 
-const emptyForm: FormState = { name: "", mobile: "", email: "", reference: "", amount: "" };
+const emptyForm: FormState = { ticketId: "", name: "", mobile: "", remark: "", amount: "" };
 
 type Status = "idle" | "processing" | "success" | "error";
 
@@ -43,12 +43,10 @@ export function PaymentForm() {
 
   function validate(): boolean {
     const next: Partial<Record<keyof FormState, string>> = {};
+    if (!form.ticketId.trim()) next.ticketId = "Please enter your Ticket ID.";
     if (!form.name.trim()) next.name = "Please enter your name.";
     if (!/^\d{10}$/.test(form.mobile.trim())) {
       next.mobile = "Please enter a valid 10-digit mobile number.";
-    }
-    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      next.email = "Please enter a valid email address.";
     }
     const amt = Number(form.amount);
     if (!amt || amt < 1) next.amount = "Please enter a valid amount.";
@@ -74,10 +72,10 @@ export function PaymentForm() {
         body: JSON.stringify({
           amount: form.amount,
           notes: {
+            ticketId: form.ticketId,
             name: form.name,
             mobile: form.mobile,
-            email: form.email,
-            reference: form.reference,
+            remark: form.remark,
           },
         }),
       });
@@ -93,12 +91,30 @@ export function PaymentForm() {
         currency: data.currency,
         order_id: data.orderId,
         name: site.brandName,
-        description: form.reference ? `Payment · Ref: ${form.reference}` : "Payment",
-        prefill: { name: form.name, contact: form.mobile, email: form.email },
+        description: `Payment · Ticket ID: ${form.ticketId}`,
+        prefill: { name: form.name, contact: form.mobile },
         theme: { color: "#1657b0" },
         handler: (response: { razorpay_payment_id: string }) => {
           setPaymentId(response.razorpay_payment_id);
           setStatus("success");
+
+          // Best-effort record-keeping — the payment has already
+          // succeeded via Razorpay above, so a logging failure here
+          // never affects what the person sees.
+          fetch("/api/log-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              reference: form.ticketId,
+              name: form.name,
+              mobile: form.mobile,
+              remark: form.remark,
+              amount: form.amount,
+              paymentId: response.razorpay_payment_id,
+            }),
+          }).catch(() => {
+            console.warn("Could not log payment to Sheet.");
+          });
         },
         modal: {
           ondismiss: () => setStatus("idle"),
@@ -166,7 +182,7 @@ export function PaymentForm() {
               Try Again
             </button>
             <a
-              href={whatsappLink(`Hi ${site.brandName}, I'm trying to make a payment of ₹${form.amount} but ran into an issue on the website.`)}
+              href={whatsappLink(`Hi ${site.brandName}, my Ticket ID is ${form.ticketId}. I'm trying to make a payment of ₹${form.amount} but ran into an issue on the website.`)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-ink)] hover:border-[#1F9E4E]/40 hover:text-[#1F9E4E] transition-colors"
@@ -178,7 +194,22 @@ export function PaymentForm() {
         </div>
       ) : (
         <div className="rounded-2xl border border-[var(--color-line)] bg-white p-6 sm:p-8">
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor="ticketId" className={labelClasses}>
+              Ticket ID
+            </label>
+            <input
+              id="ticketId"
+              type="text"
+              value={form.ticketId}
+              onChange={(e) => update("ticketId", e.target.value)}
+              placeholder="e.g. 202608250001"
+              className={inputClasses}
+            />
+            {errors.ticketId && <p className={errorClasses}>{errors.ticketId}</p>}
+          </div>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="name" className={labelClasses}>
                 Full Name
@@ -212,36 +243,18 @@ export function PaymentForm() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="email" className={labelClasses}>
-                Email <span className="font-normal text-[var(--color-slate)]">(optional)</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                placeholder="you@example.com"
-                className={inputClasses}
-              />
-              {errors.email && <p className={errorClasses}>{errors.email}</p>}
-            </div>
-            <div>
-              <label htmlFor="reference" className={labelClasses}>
-                Ticket ID / Reference{" "}
-                <span className="font-normal text-[var(--color-slate)]">(optional)</span>
-              </label>
-              <input
-                id="reference"
-                type="text"
-                value={form.reference}
-                onChange={(e) => update("reference", e.target.value)}
-                placeholder="e.g. 202608250001"
-                className={inputClasses}
-              />
-            </div>
+          <div className="mt-5">
+            <label htmlFor="remark" className={labelClasses}>
+              Remark <span className="font-normal text-[var(--color-slate)]">(optional)</span>
+            </label>
+            <input
+              id="remark"
+              type="text"
+              value={form.remark}
+              onChange={(e) => update("remark", e.target.value)}
+              placeholder="e.g. Advance for Gazette Notification"
+              className={inputClasses}
+            />
           </div>
 
           <div className="mt-5">

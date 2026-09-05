@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, MessageCircle, PhoneCall } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { TrustStrip } from "@/components/TrustStrip";
@@ -7,7 +6,7 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { ProcessSteps } from "@/components/ProcessSteps";
 import { WhyChooseUs } from "@/components/WhyChooseUs";
 import { FAQAccordion, type FAQItem } from "@/components/FAQAccordion";
-import { services } from "@/data/services";
+import { homepageServices } from "@/data/services";
 import { site, whatsappLink } from "@/data/site";
 
 const faqs: FAQItem[] = [
@@ -46,8 +45,8 @@ export default function HomePage() {
           description="Pick the service you need — every page lists the exact documents required and how long it takes."
         />
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, i) => (
-            <ServiceCard key={service.slug} service={service} index={i} />
+          {homepageServices.map((service, i) => (
+            <ServiceCard key={service.slug} service={service} index={i} showIndex={false} />
           ))}
         </div>
       </section>
@@ -109,13 +108,15 @@ export default function HomePage() {
               <PhoneCall className="size-4.5" strokeWidth={1.75} />
               Call Now
             </a>
-            <Link
-              href="/apply-now"
+            <a
+              href={site.getQuoteFormUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-[var(--color-ink)] hover:bg-white/90 transition-colors"
             >
               Get Quote
               <ArrowRight className="size-4" strokeWidth={2} />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
