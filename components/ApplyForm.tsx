@@ -20,6 +20,29 @@ declare global {
   }
 }
 
+// The Razorpay checkout script sometimes finishes loading a moment
+// after the person has already filled the form (slow connection, or a
+// late "loaded" signal after navigating here from another page). Instead
+// of failing instantly, wait briefly for window.Razorpay to appear.
+function waitForRazorpay(timeoutMs = 6000): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const start = Date.now();
+    const interval = setInterval(() => {
+      if (typeof window !== "undefined" && window.Razorpay) {
+        clearInterval(interval);
+        resolve(true);
+      } else if (Date.now() - start > timeoutMs) {
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, 150);
+  });
+}
+
 const gazetteReasons: GazetteReason[] = [
   "Personal Preference",
   "Marriage / Divorce",
@@ -199,12 +222,15 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
     e.preventDefault();
     if (!validate() || !selectedService) return;
 
-    if (!scriptReady) {
-      setStatus("error");
-      return;
-    }
-
     setStatus("submitting");
+
+    if (!scriptReady && typeof window.Razorpay === "undefined") {
+      const becameReady = await waitForRazorpay();
+      if (!becameReady) {
+        setStatus("error");
+        return;
+      }
+    }
 
     const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
 

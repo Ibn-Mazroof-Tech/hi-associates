@@ -27,7 +27,7 @@ export const site = {
   // Form in a new tab instead of the Apply Now page — see README for
   // how to create the form (Service, Full Name, Last Name, Contact,
   // City, Address, Remark) and link its responses to a Sheet.
-  getQuoteFormUrl: "https://forms.gle/8JM3iSwAYUUK7UMC9",
+  getQuoteFormUrl: "https://forms.gle/CQokrT2B31DvbPzD8",
 
   // Image paths — all files live in /public, but you only ever need to
   // edit the path here. To swap an image: drop the new file into
