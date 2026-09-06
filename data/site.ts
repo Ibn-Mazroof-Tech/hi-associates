@@ -18,16 +18,11 @@ export const site = {
 
   address: "570, street no.25, Jafrabad, Seelampur, Delhi-110053",
 
-  // Fixed registration fee charged via Razorpay when someone submits the
-  // Apply Now form — same amount for every service. Change this single
-  // number to update the fee everywhere.
-  applyNowRegistrationFee: 100,
-
   // "Get Quote" button (homepage hero + bottom CTA) opens this Google
   // Form in a new tab instead of the Apply Now page — see README for
   // how to create the form (Service, Full Name, Last Name, Contact,
   // City, Address, Remark) and link its responses to a Sheet.
-  getQuoteFormUrl: "https://forms.gle/CQokrT2B31DvbPzD8",
+  getQuoteFormUrl: "https://forms.gle/W8b6oVpYLBJowzBw8",
 
   // Image paths — all files live in /public, but you only ever need to
   // edit the path here. To swap an image: drop the new file into

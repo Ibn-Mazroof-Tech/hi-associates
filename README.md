@@ -87,7 +87,7 @@ rehte hain.
 ### Setup (ek baar karna hai)
 
 1. Naya Google Sheet banao, pehli row mein header daalo:
-   `Date | Ticket ID | Service | Name | Mobile | Email | State | Address | Gazette Reason | New Name | Razorpay Payment ID`
+   `Date | Ticket ID | Service | Name | Mobile | Email | State | Address | Gazette Reason | New Name`
 2. Sheet mein **Extensions → Apps Script** kholo, `google-apps-script/Code.gs` ka poora code
    paste kar do.
 3. **Deploy → New deployment → Web app** — "Execute as: Me", "Who has access: Anyone" →
@@ -120,34 +120,12 @@ milega jo kabhi kisi commit mein nahi tha, aur usi naye URL ko `.env.local` / Ve
 - **`.env.local` mein sahi variable name hai ya nahi** — `GOOGLE_SHEET_WEBHOOK_URL` hi hona
   chahiye, spelling match karna zaroori hai.
 
-## Apply Now ka registration fee (Razorpay)
-
-Apply Now form submit karne pe ab pehle ek **fixed registration fee** (`data/site.ts` ke
-`applyNowRegistrationFee` field se, sab services ke liye same amount) Razorpay ke through pay
-karni padti hai. Flow yeh hai:
-
-1. Form validate hota hai
-2. Razorpay checkout khulta hai fixed fee ke liye
-3. **Payment successful hone ke baad hi** application data Google Sheet mein save hota hai
-   (Ticket ID generate hoke), Razorpay Payment ID bhi usi row mein save hota hai
-4. Agar user checkout cancel/close kar de bina pay kiye, **kuch bhi save nahi hota** — form
-   wapas khaali state pe aa jata hai, dobara try kar sakte hain
-5. Agar payment successful ho jaye lekin Sheet mein save karte waqt koi error aa jaye (rare),
-   user ko ek alag screen dikhta hai jisme Payment ID clearly mention hota hai — taaki client
-   samajh sake ki paisa aa chuka hai, dobara charge nahi karna, bas manually Sheet mein add
-   karna hai us Payment ID ke through
-
-Fee amount change karna ho, bas `data/site.ts` mein `applyNowRegistrationFee: 100` wali line
-edit kar dena — poori site automatically update ho jayegi.
-
-Yeh **standalone "Make a Payment" page (`/payment`) se bilkul alag** hai — woh apni jagah waisa
-hi rahega, alag Sheet ke saath, is fee se koi connection nahi.
-
 ## "Get Quote" button → Google Form
 
 Homepage ke 2 "Get Quote" buttons (Hero + neeche wala CTA banner) ab `/apply-now` pe nahi,
-balki ek **Google Form** pe le jaate hain (naya tab mein khulta hai) — yeh free/no-payment lead
-capture ke liye hai, "Apply Now" (jisme ab fee lagti hai) se alag.
+balki ek **Google Form** pe le jaate hain (naya tab mein khulta hai) — yeh free lead capture
+ke liye hai, "Apply Now" se alag (dono hi free/no-payment hain, bas alag purpose ke liye:
+"Apply Now" poora application form hai, "Get Quote" sirf quick enquiry).
 
 ### Setup (ek baar karna hai)
 

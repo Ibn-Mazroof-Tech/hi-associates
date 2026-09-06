@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ApplyForm } from "@/components/ApplyForm";
-import { site } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Apply Now",
@@ -22,9 +21,8 @@ export default async function ApplyNowPage({
           Ready for Your Next Step? We&apos;re Excited to Meet You.
         </h1>
         <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-slate)]">
-          Choose your service and fill in a few details. A ₹{site.applyNowRegistrationFee}{" "}
-          registration fee applies for every service — once paid, we&apos;ll reach out on
-          WhatsApp with the next steps.
+          Choose your service and fill in a few details. We&apos;ll reach out on WhatsApp
+          with the next steps.
         </p>
       </div>
 

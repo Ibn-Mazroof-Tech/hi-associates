@@ -1,7 +1,7 @@
 /**
  * SETUP:
  * 1. Create a new Google Sheet. Add this header row exactly:
- *    Date | Ticket ID | Service | Name | Mobile | Email | State | Address | Gazette Reason | New Name | Razorpay Payment ID
+ *    Date | Ticket ID | Service | Name | Mobile | Email | State | Address | Gazette Reason | New Name
  * 2. In the Sheet, go to Extensions → Apps Script.
  * 3. Delete any existing code and paste this whole file in.
  * 4. Click Deploy → New deployment → select type "Web app".
@@ -31,12 +31,6 @@
  * redeploy for changes to take effect — Deploy → Manage deployments →
  * pencil icon → Version: "New version" → Deploy. Just saving the file
  * does NOT update the live /exec URL.
- *
- * REGISTRATION FEE: every Apply Now submission is charged a fixed fee
- * via Razorpay on the website BEFORE this webhook is ever called — the
- * "Razorpay Payment ID" column is simply that payment's ID for your
- * records. If a payment fails or is cancelled, this webhook is never
- * called at all, so you won't see incomplete/unpaid rows here.
  */
 
 function doPost(e) {
@@ -71,7 +65,6 @@ function doPost(e) {
       data.address || "",
       data.gazetteReason || "",
       String(data.newName || "").toUpperCase(),
-      data.razorpayPaymentId || "",
     ]);
 
     return ContentService

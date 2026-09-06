@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Mail, Phone, MapPin, MessageCircle, Clock } from "lucide-react";
-import { site, whatsappLink } from "@/data/site";
+import { Mail, Phone, Clock } from "lucide-react";
+import { site } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Contact Us",
-  description: `Get in touch with ${site.brandName} — call, email, or message us on WhatsApp.`,
+  description: `Get in touch with ${site.brandName} — call or email us.`,
 };
 
 const contactMethods = [
-  {
-    icon: MessageCircle,
-    title: "WhatsApp",
-    value: site.whatsappDisplay,
-    href: whatsappLink(`Hi ${site.brandName}, I have a question.`),
-    accent: "#1F9E4E",
-    external: true,
-  },
   {
     icon: Phone,
     title: "Call Us",
@@ -68,13 +60,11 @@ export default function ContactUsPage() {
       </section>
 
       <section className="container-page py-16 sm:py-20">
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           {contactMethods.map((method) => (
             <a
               key={method.title}
               href={method.href}
-              target={method.external ? "_blank" : undefined}
-              rel={method.external ? "noopener noreferrer" : undefined}
               className="rounded-2xl border border-[var(--color-line)] bg-white p-6 transition-colors hover:border-[var(--color-brand)]/40"
             >
               <span
@@ -91,27 +81,16 @@ export default function ContactUsPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          <div className="rounded-2xl border border-[var(--color-line)] bg-white p-6">
-            <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-sky)] text-[var(--color-brand)]">
-              <MapPin className="size-6" strokeWidth={1.75} />
-            </span>
-            <h3 className="mt-4 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[var(--color-ink)]">
-              Office Address
-            </h3>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--color-slate)]">{site.address}</p>
-          </div>
-          <div className="rounded-2xl border border-[var(--color-line)] bg-white p-6">
-            <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-sky)] text-[var(--color-brand)]">
-              <Clock className="size-6" strokeWidth={1.75} />
-            </span>
-            <h3 className="mt-4 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[var(--color-ink)]">
-              Working Hours
-            </h3>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--color-slate)]">
-              Every day, 10:00 AM – 10:00 PM
-            </p>
-          </div>
+        <div className="mt-5 rounded-2xl border border-[var(--color-line)] bg-white p-6">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-sky)] text-[var(--color-brand)]">
+            <Clock className="size-6" strokeWidth={1.75} />
+          </span>
+          <h3 className="mt-4 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[var(--color-ink)]">
+            Working Hours
+          </h3>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--color-slate)]">
+            Every day, 10:00 AM – 10:00 PM
+          </p>
         </div>
       </section>
     </div>

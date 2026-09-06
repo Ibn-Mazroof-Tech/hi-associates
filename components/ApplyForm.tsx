@@ -2,8 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
-import { Send, Loader2, AlertTriangle, MessageCircle, CheckCircle2 } from "lucide-react";
+import { Send, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
 import {
   serviceCategories,
   getServiceBySlug,
@@ -13,35 +12,6 @@ import {
 import { site, whatsappLink } from "@/data/site";
 import { indianStates } from "@/lib/indian-states";
 import { cn } from "@/lib/utils";
-
-declare global {
-  interface Window {
-    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
-  }
-}
-
-// The Razorpay checkout script sometimes finishes loading a moment
-// after the person has already filled the form (slow connection, or a
-// late "loaded" signal after navigating here from another page). Instead
-// of failing instantly, wait briefly for window.Razorpay to appear.
-function waitForRazorpay(timeoutMs = 6000): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (typeof window !== "undefined" && window.Razorpay) {
-      resolve(true);
-      return;
-    }
-    const start = Date.now();
-    const interval = setInterval(() => {
-      if (typeof window !== "undefined" && window.Razorpay) {
-        clearInterval(interval);
-        resolve(true);
-      } else if (Date.now() - start > timeoutMs) {
-        clearInterval(interval);
-        resolve(false);
-      }
-    }, 150);
-  });
-}
 
 const gazetteReasons: GazetteReason[] = [
   "Personal Preference",
@@ -88,17 +58,12 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
   const router = useRouter();
   const initialCategory = initialServiceSlug ? getCategoryForSlug(initialServiceSlug) : undefined;
 
-  const [scriptReady, setScriptReady] = useState(false);
   const [categoryId, setCategoryId] = useState(initialCategory?.id ?? "");
   const [serviceSlug, setServiceSlug] = useState(initialServiceSlug ?? "");
   const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState | "category" | "service", string>>>({});
   const [status, setStatus] = useState<Status>("idle");
   const [lastTicketId, setLastTicketId] = useState("");
-  // Set only if Razorpay already charged the person but we then failed to
-  // save their application — this is the one case where "Try Again" would
-  // risk charging them twice, so we handle it with its own message.
-  const [paidPaymentId, setPaidPaymentId] = useState("");
 
   const selectedCategory = useMemo(
     () => serviceCategories.find((c) => c.id === categoryId),
@@ -139,15 +104,15 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
       next.mobile = "Please enter a valid 10-digit mobile number.";
     }
 
-    // Email is required for every service except Gazette, where it's optional
-    // (but must still be a valid address if the person chooses to fill it in).
+    // Email is optional for every service — but if the person does fill
+    // it in, it must be a valid address.
     const emailTrimmed = form.email.trim();
-if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
-  next.email = "Please enter a valid email address.";
-}
+    if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      next.email = "Please enter a valid email address.";
+    }
 
-    if (!form.address.trim()) next.address = "Please enter your address.";
     if (!form.state) next.state = "Please select your state.";
+    if (!form.address.trim()) next.address = "Please enter your address.";
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -157,7 +122,6 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
     const lines = [
       `New enquiry from ${site.brandName} website`,
       ticketId ? `Ticket ID: ${ticketId}` : `Ticket ID: not generated (submission failed)`,
-      paidPaymentId ? `Razorpay Payment ID: ${paidPaymentId} (payment already completed)` : null,
       `Service: ${selectedService?.title}`,
       isGazette
         ? `Old Name: ${form.oldName}\nNew Name: ${form.newName}\nReason: ${form.gazetteReason}`
@@ -166,13 +130,17 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
       `Email: ${form.email || "—"}`,
       `State: ${form.state}`,
       `Address: ${form.address}`,
-    ].filter(Boolean);
+    ];
     return lines.join("\n");
   }
 
-  async function saveApplication(razorpayPaymentId: string) {
-    if (!selectedService) return;
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!validate() || !selectedService) return;
+
     const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
+
+    setStatus("submitting");
 
     try {
       // This goes to our own /api/apply route, not directly to Google —
@@ -190,7 +158,6 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
           address: form.address,
           gazetteReason: form.gazetteReason,
           newName: form.newName,
-          razorpayPaymentId,
         }),
       });
 
@@ -206,74 +173,8 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
           )}`
         );
       } else {
-        // Payment already succeeded at this point — flag it distinctly
-        // so the error screen never tells the person to just "try again"
-        // (that would risk charging them a second time).
-        setPaidPaymentId(razorpayPaymentId);
         setStatus("error");
       }
-    } catch {
-      setPaidPaymentId(razorpayPaymentId);
-      setStatus("error");
-    }
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!validate() || !selectedService) return;
-
-    setStatus("submitting");
-
-    if (!scriptReady && typeof window.Razorpay === "undefined") {
-      const becameReady = await waitForRazorpay();
-      if (!becameReady) {
-        setStatus("error");
-        return;
-      }
-    }
-
-    const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
-
-    try {
-      const res = await fetch("/api/razorpay/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: site.applyNowRegistrationFee,
-          notes: {
-            service: selectedService.title,
-            name,
-            mobile: form.mobile,
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.orderId) {
-        throw new Error(data.error || "Could not start payment.");
-      }
-
-      const rzp = new window.Razorpay({
-        key: data.keyId,
-        amount: data.amount,
-        currency: data.currency,
-        order_id: data.orderId,
-        name: site.brandName,
-        description: `Registration Fee · ${selectedService.title}`,
-        prefill: { name, contact: form.mobile, email: form.email || undefined },
-        theme: { color: "#1657b0" },
-        handler: (response: { razorpay_payment_id: string }) => {
-          // Payment has succeeded — now save the application, including
-          // this payment ID, to the Sheet.
-          saveApplication(response.razorpay_payment_id);
-        },
-        modal: {
-          // Person closed the checkout without paying — nothing was
-          // charged, so just let them try again from a clean state.
-          ondismiss: () => setStatus("idle"),
-        },
-      });
-      rzp.open();
     } catch {
       setStatus("error");
     }
@@ -283,43 +184,24 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
     const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
     return (
       <div className="rounded-2xl border border-[var(--color-line)] bg-white p-8 text-center sm:p-10">
-        <span
-          className={cn(
-            "mx-auto flex size-14 items-center justify-center rounded-full",
-            paidPaymentId ? "bg-[#1F9E4E]/10 text-[#1F9E4E]" : "bg-amber-100 text-amber-600"
-          )}
-        >
-          {paidPaymentId ? (
-            <CheckCircle2 className="size-7" strokeWidth={1.75} />
-          ) : (
-            <AlertTriangle className="size-7" strokeWidth={1.75} />
-          )}
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+          <AlertTriangle className="size-7" strokeWidth={1.75} />
         </span>
         <h2 className="mt-5 font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--color-ink)]">
-          {paidPaymentId ? "Payment received — one step left" : "Couldn't submit right now"}
+          Couldn&apos;t submit right now
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--color-slate)]">
-          {paidPaymentId ? (
-            <>
-              Your ₹{site.applyNowRegistrationFee} payment went through (Payment ID:{" "}
-              <span className="font-medium text-[var(--color-ink)]">{paidPaymentId}</span>), but
-              we couldn&apos;t save your application details. Please message us on WhatsApp with
-              this Payment ID so we can complete it for you — no need to pay again.
-            </>
-          ) : (
-            "Something went wrong starting your payment. Please try again, or message us directly on WhatsApp so we don't miss your request."
-          )}
+          Something went wrong saving your application. Please try again, or message us
+          directly on WhatsApp so we don&apos;t miss your request.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {!paidPaymentId && (
-            <button
-              type="button"
-              onClick={() => setStatus("idle")}
-              className="rounded-full bg-[var(--color-brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-brand-dark)] transition-colors"
-            >
-              Try Again
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setStatus("idle")}
+            className="rounded-full bg-[var(--color-brand)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-brand-dark)] transition-colors"
+          >
+            Try Again
+          </button>
           {selectedService && (
             <a
               href={whatsappLink(buildWhatsAppMessage(lastTicketId, name))}
@@ -337,13 +219,7 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
   }
 
   return (
-    <>
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="afterInteractive"
-        onLoad={() => setScriptReady(true)}
-      />
-      <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-[var(--color-line)] bg-white p-6 sm:p-8">
+    <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-[var(--color-line)] bg-white p-6 sm:p-8">
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="category" className={labelClasses}>
@@ -568,22 +444,20 @@ if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
       >
         {status === "submitting" ? (
           <>
-            Preparing payment…
+            Submitting…
             <Loader2 className="size-4 animate-spin" strokeWidth={2} />
           </>
         ) : (
           <>
-            Pay ₹{site.applyNowRegistrationFee} &amp; Submit
+            Submit Application
             <Send className="size-4" strokeWidth={2} />
           </>
         )}
       </button>
       <p className="mt-3 text-xs text-[var(--color-slate)]">
-        A ₹{site.applyNowRegistrationFee} registration fee applies for every service, payable
-        securely via Razorpay. You&apos;ll get a Ticket ID after payment — save it to check
-        your application status with us later.
+        You&apos;ll get a Ticket ID after submitting — save it to check your application status
+        with us later.
       </p>
-      </form>
-    </>
+    </form>
   );
 }
