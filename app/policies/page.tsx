@@ -130,6 +130,15 @@ export default function PoliciesPage() {
                 We may update this Privacy Policy from time to time. Changes will be posted
                 on this page with the updated effective date.
               </p>
+
+              <h3 className="pt-2 font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                Contact Us
+              </h3>
+              <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+              <ul className="list-none space-y-1.5">
+                <li>📞 {site.landline}</li>
+                <li>📍 {site.address}</li>
+              </ul>
             </div>
           </section>
 

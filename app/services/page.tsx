@@ -37,7 +37,7 @@ export default function ServicesPage() {
 
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((service, i) => (
-          <ServiceCard key={service.slug} service={service} index={i} />
+          <ServiceCard key={service.slug} service={service} index={i} showIndex={false} />
         ))}
       </div>
     </div>

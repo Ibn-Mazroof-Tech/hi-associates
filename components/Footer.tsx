@@ -86,7 +86,7 @@ export function Footer() {
           <div className="mt-4 overflow-hidden rounded-xl border border-white/15">
             <iframe
               title="Office location map"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(site.address)}&output=embed`}
+              src={`https://maps.google.com/maps?q=${site.mapCoordinates.lat},${site.mapCoordinates.lng}&z=17&output=embed`}
               className="h-32 w-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

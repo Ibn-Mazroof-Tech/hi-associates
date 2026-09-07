@@ -16,13 +16,18 @@ export const site = {
   whatsappNumber: "919910247897", // country code + number, no + or spaces
   whatsappDisplay: "+91 99102 47897",
 
-  address: "570, street no.25, Jafrabad, Seelampur, Delhi-110053",
+  address: "Jafrabad, Seelampur, Delhi-110053",
+
+  // Exact pin location for the Footer map embed — searching by the
+  // address text alone can point Google Maps to the wrong spot, so this
+  // uses precise coordinates instead. Update both if the office moves.
+  mapCoordinates: { lat: 28.679513, lng: 77.272064 },
 
   // "Get Quote" button (homepage hero + bottom CTA) opens this Google
   // Form in a new tab instead of the Apply Now page — see README for
   // how to create the form (Service, Full Name, Last Name, Contact,
   // City, Address, Remark) and link its responses to a Sheet.
-  getQuoteFormUrl: "https://forms.gle/W8b6oVpYLBJowzBw8",
+  getQuoteFormUrl: "https://forms.gle/EhS4AHRbGrmVqwm36",
 
   // Image paths — all files live in /public, but you only ever need to
   // edit the path here. To swap an image: drop the new file into
