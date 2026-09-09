@@ -97,7 +97,6 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
       if (!form.gazetteReason) next.gazetteReason = "Please select a reason for name change.";
     } else {
       if (!form.firstName.trim()) next.firstName = "Please enter your first name.";
-      if (!form.lastName.trim()) next.lastName = "Please enter your last name.";
     }
 
     if (!/^\d{10}$/.test(form.mobile.trim())) {
@@ -138,7 +137,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
     e.preventDefault();
     if (!validate() || !selectedService) return;
 
-    const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
+    const name = isGazette ? form.oldName : [form.firstName, form.lastName].filter(Boolean).join(" ");
 
     setStatus("submitting");
 
@@ -181,7 +180,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
   }
 
   if (status === "error") {
-    const name = isGazette ? form.oldName : `${form.firstName} ${form.lastName}`;
+    const name = isGazette ? form.oldName : [form.firstName, form.lastName].filter(Boolean).join(" ");
     return (
       <div className="rounded-2xl border border-[var(--color-line)] bg-white p-8 text-center sm:p-10">
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">
@@ -349,7 +348,7 @@ export function ApplyForm({ initialServiceSlug }: { initialServiceSlug?: string 
           </div>
           <div>
             <label htmlFor="lastName" className={labelClasses}>
-              Last Name
+              Last Name <span className="font-normal text-[var(--color-slate)]">(optional)</span>
             </label>
             <input
               id="lastName"
